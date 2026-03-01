@@ -43,28 +43,21 @@ export const registerUser = async (data: RegisterUserInput) => {
   };
 };
 
-export const userLogin = async(data: LoginUserInput) => {
-    const { email, password } = data;
+export const userLogin = async (data: LoginUserInput) => {
+  const { email, password } = data;
 
-    const user = await User.findOne({ email });
-    if(!user){
-        throw new Error("Invalid Email or Password");
-    };
+  const user = await User.findOne({
+    email: email.toLowerCase(),
+  });
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if(!isPasswordValid){
-        throw new Error("Invalid Email or Password");
-    };
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw new Error("Invalid Email or Password");
+  }
 
   const token = jwt.sign(
-    {
-      userId: user._id,
-      role: user.role,
-    },
+    { id: user._id, role: user.role },
     jwtConfig.accessTokenSecret,
-    {
-      expiresIn: jwtConfig.accessTokenExpiry,
-    }
+    { expiresIn: jwtConfig.accessTokenExpiry }
   );
 
   return {
