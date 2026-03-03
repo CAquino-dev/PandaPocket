@@ -1,66 +1,44 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
-
-export type TransactionType = "income" | "expense"; 
+import { CategoryType } from "../models/category.model"; 
 
 export interface ITransaction extends Document {
-    userId: Types.ObjectId;
-    type: TransactionType;
-    categoryId: Types.ObjectId;
-
-    amount: number;
-    description?: string;
-
-    transactionDate: Date;
-
-    createdAt: Date;
-    updatedAt: Date;
+  userId: mongoose.Types.ObjectId;
+  type: CategoryType;
+  amount: number;
+  category: mongoose.Types.ObjectId; // reference
+  description?: string;
+  date: Date;
 }
 
-const TransactionSchema = new Schema<ITransaction>(
+const transactionSchema = new Schema<ITransaction>(
   {
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
-
     type: {
       type: String,
       enum: ["income", "expense"],
       required: true,
     },
-
-    categoryId: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-      index: true,
-    },
-
     amount: {
       type: Number,
       required: true,
       min: 0,
     },
-
-    description: {
-      type: String,
-      trim: true,
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
     },
-
-    transactionDate: {
+    description: String,
+    date: {
       type: Date,
       required: true,
-      index: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Compound index for faster filtering
-TransactionSchema.index({ userId: 1, transactionDate: -1 });
-
-export default mongoose.model<ITransaction>("Transaction", TransactionSchema);
+export default mongoose.model<ITransaction>("Transaction",transactionSchema);
