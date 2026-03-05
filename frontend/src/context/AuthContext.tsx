@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-
 
 interface User {
   id: string;
@@ -70,4 +64,14 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used inside AuthProvider");
   return context;
+};
+
+export const useAuthToken = () => {
+  const { token } = useAuth();
+
+  if (!token) {
+    throw new Error("User not authenticated");
+  }
+
+  return token;
 };
