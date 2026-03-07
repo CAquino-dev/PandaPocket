@@ -20,22 +20,22 @@ interface DeleteTransactionInput {
   transactionId: string;
 }
 
-export const createTransaction = async (
-  data: CreateTransactionInput
-) => {
+export const createTransaction = async ( data: CreateTransactionInput ) => {
   const { userId, type, amount, categoryId, description, date } = data;
 
-  // 1️⃣ Check category exists & belongs to user
   const category = await Category.findOne({
     _id: categoryId,
-    userId,
+    $or: [
+      { userId },
+      { userId: null }
+    ]
   });
 
   if (!category) {
     throw new Error("Invalid category");
   }
 
-  // 2️⃣ Ensure type matches
+  // Ensure transaction type matches category type
   if (category.type !== type) {
     throw new Error("Category type mismatch");
   }
