@@ -48,11 +48,19 @@ export const deleteCategory = async (data: deleteCategoryInput): Promise<void> =
     await Category.deleteOne({ _id: category._id });
 }
 
-export const getCategories = async(data: getCategoriesInput): Promise<ICategory[]> => {
-    const {userId, type} = data; 
+export const getCategories = async (data: getCategoriesInput) => {
+  const { userId, type } = data;
 
-    const filter: any = { userId };
-    if (type) filter.type = type;
+  const query: any = {
+    $or: [
+      { userId: null }, // default categories
+      { userId: userId } // user categories
+    ]
+  };
 
-    return Category.find(filter).sort({ name: 1 });
+  if (type) {
+    query.type = type;
+  }
+
+  return Category.find(query).sort({ name: 1 });
 };
