@@ -6,6 +6,7 @@ import Transactions from "./pages/Transactions";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
 import LandingPage from "./pages/LandingPage";
+import { Toaster } from "sonner";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
+      <Toaster position="top-right" richColors closeButton />
     </BrowserRouter>
   );
 }
