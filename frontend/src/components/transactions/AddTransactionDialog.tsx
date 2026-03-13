@@ -27,8 +27,9 @@ import {
   FileText,
   Calendar,
   ChevronRight,
-  X,
 } from "lucide-react";
+
+import { CategorySelectionDialog } from "./CategorySelectionDialog";
 
 interface Props {
   categories: Category[];
@@ -56,7 +57,7 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [form, setForm] = useState({
     description: "",
     amount: "",
-    type: "income",
+    type: "income" as "income" | "expense",
     category: "",
     date: new Date().toISOString().split("T")[0],
   });
@@ -65,8 +66,6 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [error, setError] = useState<string | null>(null);
 
   const isIncome = form.type === "income";
-
-  const filteredCategories = categories.filter((c) => c.type === form.type);
 
   const selectedCategory = categories.find((c) => c._id === form.category);
 
@@ -366,75 +365,17 @@ const AddTransactionDialog: React.FC<Props> = ({
       </Dialog>
 
       {/* Category Selection Dialog */}
-      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Select a Category</DialogTitle>
-            <DialogDescription>
-              Choose a category for your {form.type}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="max-h-[400px] overflow-y-auto py-2">
-            {filteredCategories.length === 0 ? (
-              <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                No categories found for {form.type}
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredCategories.map((category) => (
-                  <button
-                    key={category._id}
-                    type="button"
-                    onClick={() => {
-                      handleSelectChange("category", category._id);
-                      setCategoryDialogOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
-                      form.category === category._id
-                        ? category.type === "income"
-                          ? "border-green-500 bg-green-50 dark:bg-green-950/20"
-                          : "border-red-500 bg-red-50 dark:bg-red-950/20"
-                        : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`p-2 rounded-full ${
-                          category.type === "income"
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        <Tag className="w-4 h-4" />
-                      </div>
-                      <div className="text-left">
-                        <div className="font-medium">{category.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {category.type === "income" ? "Income" : "Expense"}{" "}
-                          category
-                        </div>
-                      </div>
-                    </div>
-                    {form.category === category._id && (
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setCategoryDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CategorySelectionDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        categories={categories}
+        selectedType={form.type}
+        selectedCategoryId={form.category}
+        onSelectCategory={(categoryId) => {
+          handleSelectChange("category", categoryId);
+          setCategoryDialogOpen(false);
+        }}
+      />
     </>
   );
 };

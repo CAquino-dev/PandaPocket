@@ -3,7 +3,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 export type CategoryType = "income" | "expense";
 
 export interface ICategory extends Document {
-  userId: Types.ObjectId;
+  userId?: Types.ObjectId | null;
   name: string;
   type: CategoryType;
 
@@ -16,7 +16,7 @@ const CategorySchema = new Schema<ICategory>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null, // NULL = system category
       index: true,
     },
 
@@ -37,7 +37,7 @@ const CategorySchema = new Schema<ICategory>(
   }
 );
 
-// Prevent duplicate category names per user per type
+// prevent duplicates
 CategorySchema.index(
   { userId: 1, name: 1, type: 1 },
   { unique: true }
