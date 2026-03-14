@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Transaction, Category } from "../types/transactions";
 import type { TransactionFilters, PaginatedTransactions } from "@/services/transactionService";
-import { getCategories, getTransactions } from "@/services/transactionService";
+import { getTransactions } from "@/services/transactionService";
+import { getCategories } from "@/services/categoryService";
 
 export const useTransactions = (API_URL: string, token: string) => {
   const [categories, setCategories] = useState<Category[]>([]);
