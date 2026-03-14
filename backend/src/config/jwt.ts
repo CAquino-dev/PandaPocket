@@ -5,5 +5,5 @@ export const jwtConfig: {
   accessTokenExpiry: SignOptions["expiresIn"];
 } = {
   accessTokenSecret: process.env.JWT_SECRET ?? "fallbacksecret",
-  accessTokenExpiry: (process.env.JWT_EXPIRES_IN ?? "15m") as SignOptions["expiresIn"],
+  accessTokenExpiry: (process.env.JWT_EXPIRES_IN ?? "1h") as SignOptions["expiresIn"],
 };

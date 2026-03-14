@@ -1,14 +1,22 @@
 import type { Transaction } from "../../types/transactions";
+import type { PaginatedTransactions } from "@/services/transactionService";
 import TransactionItem from "./TransactionItem";
-import { DollarSign, Plus } from "lucide-react";
+import { DollarSign, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
   transactions: Transaction[];
+  pagination: PaginatedTransactions["pagination"] | null;
+  onPageChange: (page: number) => void;
   onAddClick?: () => void;
 }
 
-const TransactionList = ({ transactions, onAddClick }: Props) => {
+const TransactionList = ({
+  transactions,
+  pagination,
+  onPageChange,
+  onAddClick,
+}: Props) => {
   if (transactions.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-12 flex flex-col items-center justify-center text-center gap-4">
@@ -43,6 +51,33 @@ const TransactionList = ({ transactions, onAddClick }: Props) => {
           <TransactionItem key={tx._id} transaction={tx} />
         ))}
       </div>
+
+      {pagination && pagination.pages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <p className="text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.pages} &mdash;{" "}
+            {pagination.total} total
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(pagination.page + 1)}
+              disabled={pagination.page >= pagination.pages}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
