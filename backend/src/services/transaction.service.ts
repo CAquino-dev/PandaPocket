@@ -13,6 +13,13 @@ interface CreateTransactionInput {
 
 interface GetTransactionsInput {
   userId: mongoose.Types.ObjectId;
+  page?: number;
+  limit?: number;
+  type?: "income" | "expense";
+  categoryId?: mongoose.Types.ObjectId;
+  search?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 interface DeleteTransactionInput {
@@ -53,11 +60,66 @@ export const createTransaction = async ( data: CreateTransactionInput ) => {
 export const getUserTransactions = async (
   data: GetTransactionsInput
 ) => {
-  const { userId } = data;
 
-  return Transaction.find({ userId })
-    .populate("category", "name type")
-    .sort({ date: -1 });
+  const {
+    userId,
+    page = 1,
+    limit = 10,
+    type,
+    categoryId,
+    search,
+    startDate,
+    endDate,
+  } = data;
+
+  const skip = (page - 1) * limit;
+
+  const filter: any = { userId };
+
+  if(type) {
+    filter.type = type;
+  }
+
+  if(categoryId) {
+    filter.category = categoryId;
+  }
+
+  if(startDate || endDate){
+    filter.date = {};
+
+    if(startDate){
+      filter.date.$gte = startDate;
+    }
+    if(endDate){
+      filter.date.$lte = endDate;
+    }
+  }
+
+    // search description
+  if (search) {
+    filter.description = {
+      $regex: search,
+      $options: "i",
+    };
+  }
+
+  const total = await Transaction.countDocuments(filter);
+
+  const transactions = await Transaction.find(filter)
+  .populate("category", "name type")
+  .sort({ date: -1 })
+  .skip(skip)
+  .limit(limit);
+
+  return {
+    transactions,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const deleteTransaction = async (

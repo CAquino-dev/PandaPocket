@@ -35,6 +35,19 @@ export const getTransactions = async (req: Request, res: Response) => {
 
     const transactions = await transactionService.getUserTransactions({
       userId,
+      page: req.query.page ? Number(req.query.page) : 1,
+      limit: req.query.limit ? Number(req.query.limit) : 10,
+      type: req.query.type as "income" | "expense",
+      categoryId: req.query.categoryId
+        ? new mongoose.Types.ObjectId(req.query.categoryId as string)
+        : undefined,
+      search: req.query.search as string,
+      startDate: req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : undefined,  
+      endDate: req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : undefined,
     });
 
     res.status(200).json(transactions);
