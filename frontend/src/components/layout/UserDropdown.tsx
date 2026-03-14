@@ -9,7 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-import { UserIcon, SettingsIcon, LogOutIcon } from "lucide-react";
+import {
+  UserIcon,
+  SettingsIcon,
+  LogOutIcon,
+  ChevronUpIcon,
+} from "lucide-react";
 
 interface Props {
   user: any;
@@ -29,18 +34,23 @@ export function UserDropdown({ user, onLogout }: Props) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-3 rounded-full px-2 transition-all duration-200 hover:bg-money/10 hover:text-money dark:hover:bg-primary/20 dark:hover:text-primary-light"
+          className="w-full flex items-center justify-start gap-3 rounded-full px-2 transition-all duration-200 hover:bg-money/10 hover:text-money dark:hover:bg-primary/20 dark:hover:text-primary-light"
         >
-          <Avatar className="h-8 w-8 border-2 border-money/20 dark:border-primary-light/20">
+          <Avatar className="h-8 w-8 border-2 border-money/20 dark:border-primary-light/20 flex-shrink-0">
             <AvatarFallback className="bg-money/10 text-xs font-medium text-money dark:bg-primary/20 dark:text-primary-light">
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
 
-          <div className="hidden flex-col items-start lg:flex">
-            <span className="text-sm font-medium">{username}</span>
-            <span className="text-xs text-muted-foreground">{user?.email}</span>
+          <div className="hidden flex-col items-start min-w-0 flex-1 lg:flex">
+            <span className="text-sm font-medium truncate w-full text-left">
+              {username}
+            </span>
+            <span className="text-xs text-muted-foreground truncate w-full text-left">
+              {user?.email}
+            </span>
           </div>
+          <ChevronUpIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
 

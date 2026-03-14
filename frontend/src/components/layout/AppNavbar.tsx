@@ -3,13 +3,10 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { BellIcon } from "lucide-react";
 
-import { useAuth } from "@/context/AuthContext";
-import { UserDropdown } from "./UserDropdown";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function AppNavbar() {
   const location = useLocation();
-  const { user, logout } = useAuth();
 
   const routeTitles: Record<string, string> = {
     "/": "Dashboard",
@@ -45,8 +42,6 @@ export function AppNavbar() {
         </Button>
 
         <ThemeToggle />
-
-        <UserDropdown user={user} onLogout={logout} />
       </div>
     </header>
   );
