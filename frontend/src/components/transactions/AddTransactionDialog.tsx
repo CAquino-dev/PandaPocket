@@ -375,6 +375,7 @@ const AddTransactionDialog: React.FC<Props> = ({
           handleSelectChange("category", categoryId);
           setCategoryDialogOpen(false);
         }}
+        onCategoryCreated={onSuccess}
       />
     </>
   );

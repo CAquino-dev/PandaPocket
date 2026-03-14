@@ -1,5 +1,6 @@
 import React from "react";
 import type { Category } from "../../types/transactions";
+import AddCategoryDialog from "./AddCategoryDialog";
 
 import {
   Dialog,
@@ -20,6 +21,7 @@ interface CategorySelectionDialogProps {
   selectedType: "income" | "expense";
   selectedCategoryId: string;
   onSelectCategory: (categoryId: string) => void;
+  onCategoryCreated: () => void;
 }
 
 export const CategorySelectionDialog: React.FC<
@@ -31,6 +33,7 @@ export const CategorySelectionDialog: React.FC<
   selectedType,
   selectedCategoryId,
   onSelectCategory,
+  onCategoryCreated,
 }) => {
   const filteredCategories = categories.filter((c) => c.type === selectedType);
 
@@ -92,6 +95,10 @@ export const CategorySelectionDialog: React.FC<
         </div>
 
         <DialogFooter>
+          <AddCategoryDialog
+            onSuccess={onCategoryCreated}
+            defaultType={selectedType}
+          />
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
