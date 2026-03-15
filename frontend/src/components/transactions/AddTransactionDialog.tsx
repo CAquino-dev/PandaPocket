@@ -124,7 +124,7 @@ const AddTransactionDialog: React.FC<Props> = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm">
+          <Button className="gap-2 bg-(--color-primary) hover:bg-[var(--color-primary-dark)] text-white shadow-sm">
             <Plus className="w-4 h-4" />
             Add Transaction
           </Button>
