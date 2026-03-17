@@ -58,7 +58,6 @@ export const deleteBudget = async (data: deleteBudgetInput) => {
 export const getBudgetsWithSpending = async (data: getBudgetsWithSpendingInput) => {
     const { userId, month, year } = data;
 
-    // Step 1: aggregate spending per category from transactions
     const spendingByCategory = await transactionModel.aggregate([
         {
             $match: {
@@ -78,17 +77,15 @@ export const getBudgetsWithSpending = async (data: getBudgetsWithSpendingInput) 
         }
     ]);
 
-    // Step 2: turn the array into a map for easy lookup
     const spendingMap = new Map(
         spendingByCategory.map(s => [s._id.toString(), s.totalSpent])
     );
 
-    // Step 3: fetch all budgets for this user/month/year
-    const budgets = await Budget.find({ userId, month, year });
+    const budgets = await Budget.find({ userId, month, year })
+        .populate("categoryId", "name type");
 
-    // Step 4: merge budgets with their spending
     return budgets.map(budget => ({
         ...budget.toObject(),
-        spent: spendingMap.get(budget.categoryId.toString()) ?? 0
+        spent: spendingMap.get(budget.categoryId._id.toString()) ?? 0
     }));
 };

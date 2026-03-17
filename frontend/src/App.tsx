@@ -6,6 +6,7 @@ import Transactions from "./pages/Transactions";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AppLayout from "./layouts/AppLayout";
 import LandingPage from "./pages/LandingPage";
+import Budgets from "./pages/Budgets";
 import { Toaster } from "sonner";
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
+            <Route path="/budgets" element={<Budgets />} />
           </Route>
         </Route>
       </Routes>

@@ -44,7 +44,7 @@ const CategoryPieChart = ({ data, type }: Props) => {
         <h2 className="text-base font-semibold mb-4">
           {type === "expense" ? "Spending" : "Income"} by Category
         </h2>
-        <div className="h-[300px] flex items-center justify-center text-sm text-muted-foreground">
+        <div className="h-75 flex items-center justify-center text-sm text-muted-foreground">
           No data for this period
         </div>
       </div>
