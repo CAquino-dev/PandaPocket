@@ -21,6 +21,17 @@ export type PaginatedTransactions = {
   };
 };
 
+export const getRecentTransactions = async (
+  API_URL: string,
+  token: string,
+  count: number = 10  
+) => {
+  return getTransactions(API_URL, token, {
+    page: 1,
+    limit: count
+  })
+}
+
 export const getTransactions = async (
   API_URL: string,
   token: string,

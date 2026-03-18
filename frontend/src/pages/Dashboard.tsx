@@ -1,7 +1,9 @@
+// Dashboard.tsx
 import { useAnalytics } from "@/hooks/useAnalytics";
 import SummaryCards from "@/components/analytics/SummaryCards";
 import OverviewChart from "@/components/analytics/OverviewChart";
 import CategoryPieChart from "@/components/analytics/CategoryPieChart";
+import RecentTransactions from "@/components/analytics/RecentTransactions";
 import {
   Select,
   SelectContent,
@@ -9,6 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useAuth } from "@/context/AuthContext";
 
 const MONTHS = [
   { value: 1, label: "January" },
@@ -41,6 +45,12 @@ const Dashboard = () => {
     loading,
     error,
   } = useAnalytics();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const { token } = useAuth();
+  if (!token) return <div>Loading...</div>;
+
+  const { recentTransactions } = useTransactions(API_URL, token);
+  console.log(recentTransactions);
 
   return (
     <div className="p-6 space-y-6">
@@ -109,24 +119,29 @@ const Dashboard = () => {
           {/* Overview Chart */}
           <OverviewChart data={overview} />
 
-          {/* Category Breakdown */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">Category Breakdown</h2>
-              <Select
-                value={type}
-                onValueChange={(val) => setType(val as "income" | "expense")}
-              >
-                <SelectTrigger className="w-36 bg-background">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="expense">Expenses</SelectItem>
-                  <SelectItem value="income">Income</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Two Column Layout for Category Breakdown and Recent Transactions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Recent Transactions */}
+            <RecentTransactions transactions={recentTransactions || []} />
+            {/* Category Breakdown */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold">Category Breakdown</h2>
+                <Select
+                  value={type}
+                  onValueChange={(val) => setType(val as "income" | "expense")}
+                >
+                  <SelectTrigger className="w-36 bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="expense">Expenses</SelectItem>
+                    <SelectItem value="income">Income</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <CategoryPieChart data={categoryBreakdown} type={type} />
             </div>
-            <CategoryPieChart data={categoryBreakdown} type={type} />
           </div>
         </>
       )}
