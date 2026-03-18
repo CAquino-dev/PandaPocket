@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Wallet, Menu, X } from "lucide-react";
 import { navLinks } from "./data/landingData";
+import { ThemeToggle } from "../layout/ThemeToggle";
 
 const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -70,7 +71,8 @@ const Navigation = () => {
           )}
 
           {/* Desktop Auth Buttons - always visible */}
-          <div className="hidden md:flex items-center justify-end space-x-4 w-[180px]">
+          <div className="hidden md:flex items-center justify-end space-x-1 w-45">
+            <ThemeToggle />
             <Link
               to="/login"
               className={`px-6 py-2.5 transition font-medium whitespace-nowrap ${
