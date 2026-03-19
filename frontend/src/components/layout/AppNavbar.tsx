@@ -11,6 +11,7 @@ export function AppNavbar() {
   const routeTitles: Record<string, string> = {
     "/": "Dashboard",
     "/transactions": "Transactions",
+    "/budgets": "Budgets",
   };
 
   const pageTitle = routeTitles[location.pathname] ?? "Dashboard";
