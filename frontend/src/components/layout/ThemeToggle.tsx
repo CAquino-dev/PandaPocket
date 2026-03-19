@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { SunIcon, MoonIcon } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle() {
@@ -25,27 +24,22 @@ export function ThemeToggle() {
     }
   }, [isDark]);
 
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
+
   return (
-    <div className="flex items-center gap-2 rounded-full border border-border bg-money/10 px-3 py-1.5 transition-colors dark:bg-primary/20">
-      <SunIcon
-        className={cn(
-          "h-4 w-4",
-          !isDark ? "text-money" : "text-muted-foreground",
-        )}
-      />
-
-      <Switch
-        checked={isDark}
-        onCheckedChange={setIsDark}
-        className="data-[state=checked]:bg-money dark:data-[state=checked]:bg-primary-light"
-      />
-
-      <MoonIcon
-        className={cn(
-          "h-4 w-4",
-          isDark ? "text-primary-light" : "text-muted-foreground",
-        )}
-      />
-    </div>
+    <button
+      onClick={toggleTheme}
+      className="flex items-center gap-2 rounded-full border border-border bg-money/10 px-3 py-1.5 transition-all hover:scale-105 hover:bg-money/20 dark:bg-primary/20 dark:hover:bg-primary/30"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {isDark ? (
+        <MoonIcon className="h-4 w-4 text-primary-light" />
+      ) : (
+        <SunIcon className="h-4 w-4 text-money" />
+      )}
+      <span className="sr-only">{isDark ? "Dark mode" : "Light mode"}</span>
+    </button>
   );
 }
