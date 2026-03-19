@@ -3,6 +3,7 @@ import { CategoryType } from "../models/category.model";
 
 export interface ITransaction extends Document {
   userId: mongoose.Types.ObjectId;
+  accountId: mongoose.Types.ObjectId;
   type: CategoryType;
   amount: number;
   category: mongoose.Types.ObjectId; // reference
@@ -15,6 +16,11 @@ const transactionSchema = new Schema<ITransaction>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
+    }, 
+    accountId: {
+      type: Schema.Types.ObjectId,
+      ref: "Accounts",
       required: true,
     },
     type: {
