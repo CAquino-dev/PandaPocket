@@ -12,6 +12,7 @@ export function AppNavbar() {
     "/": "Dashboard",
     "/transactions": "Transactions",
     "/budgets": "Budgets",
+    "/accounts": "Accounts",
   };
 
   const pageTitle = routeTitles[location.pathname] ?? "Dashboard";

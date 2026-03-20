@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuthToken } from "@/context/AuthContext";
 import type { Category } from "../../types/transactions";
+import type { IAccount } from "../../types/accounts";
 import { createTransaction } from "@/services/transactionService";
 
 import {
@@ -27,19 +28,52 @@ import {
   FileText,
   Calendar,
   ChevronRight,
+  Wallet,
+  Landmark,
+  PiggyBank,
+  Banknote,
 } from "lucide-react";
 
 import { CategorySelectionDialog } from "./CategorySelectionDialog";
 
 interface Props {
   categories: Category[];
+  accounts: IAccount[];
   onSuccess: () => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
+const ACCOUNT_ICONS: Record<string, React.ReactNode> = {
+  cash: <Banknote className="w-4 h-4" />,
+  bank: <Landmark className="w-4 h-4" />,
+  savings: <PiggyBank className="w-4 h-4" />,
+  ewallet: <Wallet className="w-4 h-4" />,
+  credit: <DollarSign className="w-4 h-4" />,
+};
+
+// Remove ACCOUNT_COLORS constant since we're using global classes now
+const getAccountColorClass = (type: string): string => {
+  const colorMap: Record<string, string> = {
+    cash: "account-cash",
+    bank: "account-bank",
+    savings: "account-savings",
+    ewallet: "account-ewallet",
+    credit: "account-credit",
+  };
+  return colorMap[type] || "account-bank"; // fallback to bank if type not found
+};
+
+const formatCurrency = (amount: number, currency: string) =>
+  new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+
 const AddTransactionDialog: React.FC<Props> = ({
   categories,
+  accounts,
   onSuccess,
   open: externalOpen,
   onOpenChange,
@@ -50,7 +84,6 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [internalOpen, setInternalOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
-  // Use external control if provided, otherwise use internal state
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
@@ -59,6 +92,7 @@ const AddTransactionDialog: React.FC<Props> = ({
     amount: "",
     type: "income" as "income" | "expense",
     category: "",
+    accountId: "",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -66,8 +100,8 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [error, setError] = useState<string | null>(null);
 
   const isIncome = form.type === "income";
-
   const selectedCategory = categories.find((c) => c._id === form.category);
+  const selectedAccount = accounts.find((a) => a._id === form.accountId);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -85,6 +119,7 @@ const AddTransactionDialog: React.FC<Props> = ({
       amount: "",
       type: "income",
       category: "",
+      accountId: "",
       date: new Date().toISOString().split("T")[0],
     });
   };
@@ -94,21 +129,17 @@ const AddTransactionDialog: React.FC<Props> = ({
       setLoading(true);
       setError(null);
 
-      const selectedCategory = categories.find((c) => c._id === form.category);
+      if (!selectedCategory) throw new Error("Please select a category");
+      if (!form.accountId) throw new Error("Please select an account");
 
-      if (!selectedCategory) {
-        throw new Error("Please select a category");
-      }
-
-      const requestBody = {
+      await createTransaction(API_URL, token, {
         type: form.type,
         amount: Number(form.amount),
         categoryId: selectedCategory._id,
+        accountId: form.accountId,
         description: form.description,
         date: form.date,
-      };
-
-      await createTransaction(API_URL, token, requestBody);
+      });
 
       resetForm();
       setOpen(false);
@@ -130,12 +161,12 @@ const AddTransactionDialog: React.FC<Props> = ({
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden gap-0">
+        {/* Extended width from sm:max-w-md to md:max-w-2xl */}
+        <DialogContent className="sm:max-w-xl md:max-w-2xl p-0 overflow-hidden gap-0">
           <DialogDescription className="sr-only">
             Form to add a new income or expense transaction
           </DialogDescription>
 
-          {/* Modal color bar */}
           <div
             className={`h-1.5 w-full transition-colors duration-300 ${
               isIncome ? "bg-[var(--color-money)]" : "bg-[var(--color-expense)]"
@@ -170,7 +201,7 @@ const AddTransactionDialog: React.FC<Props> = ({
             </DialogHeader>
 
             <div className="space-y-5">
-              {/* Type toggle */}
+              {/* Type toggle - now in a single row with more space */}
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Type *</Label>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
@@ -207,100 +238,142 @@ const AddTransactionDialog: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Account selector - now showing 3 accounts per row with the wider dialog */}
               <div className="space-y-1.5">
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="description"
-                    name="description"
-                    placeholder="e.g. Monthly salary, Groceries…"
-                    value={form.description}
-                    onChange={handleChange}
-                    className="pl-9"
-                  />
+                <Label className="text-sm font-medium">Account *</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {accounts.map((account) => (
+                    <button
+                      key={account._id}
+                      type="button"
+                      onClick={() =>
+                        handleSelectChange("accountId", account._id)
+                      }
+                      className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
+                        form.accountId === account._id
+                          ? "border-primary bg-primary/5 dark:bg-primary/10"
+                          : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-md ${getAccountColorClass(account.type)}`}
+                      >
+                        {ACCOUNT_ICONS[account.type]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {account.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {formatCurrency(account.balance, account.currency)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Amount */}
-              <div className="space-y-1.5">
-                <Label htmlFor="amount" className="text-sm font-medium">
-                  Amount *
-                </Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={form.amount}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                  />
+              {/* Two-column layout for Amount and Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Amount */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="amount" className="text-sm font-medium">
+                    Amount *
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                      {selectedAccount?.currency ?? "₱"}
+                    </span>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.amount}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="date" className="text-sm font-medium">
+                    Date *
+                  </Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <Input
+                      id="date"
+                      name="date"
+                      type="date"
+                      value={form.date}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Date */}
-              <div className="space-y-1.5">
-                <Label htmlFor="date" className="text-sm font-medium">
-                  Date *
-                </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                    max={new Date().toISOString().split("T")[0]} // Can't select future dates
-                  />
+              {/* Two-column layout for Description and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="description" className="text-sm font-medium">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="description"
+                      name="description"
+                      placeholder="e.g. Monthly salary, Groceries…"
+                      value={form.description}
+                      onChange={handleChange}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Category - Now as a button that opens a dialog */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Category *</Label>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <button
-                    type="button"
-                    onClick={() => setCategoryDialogOpen(true)}
-                    className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {selectedCategory ? (
-                      <span className="flex items-center gap-2">
-                        {selectedCategory.name}
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                            selectedCategory.type === "income"
-                              ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
-                              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
-                          }`}
-                        >
-                          {selectedCategory.type}
+                {/* Category */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Category *</Label>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={() => setCategoryDialogOpen(true)}
+                      className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      {selectedCategory ? (
+                        <span className="flex items-center gap-2">
+                          {selectedCategory.name}
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                              selectedCategory.type === "income"
+                                ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {selectedCategory.type}
+                          </span>
                         </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Select a category
-                      </span>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </button>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Select a category
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Error */}
               {error && (
                 <div className="text-sm text-[var(--color-expense)] bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-md px-3 py-2">
                   {error}
@@ -320,6 +393,7 @@ const AddTransactionDialog: React.FC<Props> = ({
                   loading ||
                   !form.amount ||
                   !form.category ||
+                  !form.accountId ||
                   !form.date ||
                   Number(form.amount) <= 0
                 }
@@ -364,7 +438,6 @@ const AddTransactionDialog: React.FC<Props> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Category Selection Dialog */}
       <CategorySelectionDialog
         open={categoryDialogOpen}
         onOpenChange={setCategoryDialogOpen}

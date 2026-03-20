@@ -1,6 +1,6 @@
 import type { Transaction } from "../../types/transactions";
 import { formatCurrency } from "../../lib/format";
-import { ArrowUpCircle, ArrowDownCircle, DollarSign } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, Banknote } from "lucide-react";
 
 interface Props {
   transactions: Transaction[];
@@ -67,7 +67,7 @@ const TransactionSummary = ({ transactions }: Props) => {
                 : "bg-red-50 dark:bg-red-950/30"
             }`}
           >
-            <DollarSign
+            <Banknote
               className={`w-4 h-4 sm:w-5 sm:h-5 ${
                 balance >= 0
                   ? "text-[var(--color-money)]"
