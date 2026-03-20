@@ -47,6 +47,7 @@ const Transactions = () => {
 
       <TransactionFilters
         categories={categories}
+        accounts={accounts}
         filters={filters}
         onFiltersChange={setFilters}
       />
