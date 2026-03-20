@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useAccounts } from "@/hooks/useAccounts";
 
 import TransactionList from "@/components/transactions/TransactionList";
 import TransactionSummary from "@/components/transactions/TransactionSummary";
@@ -17,6 +18,8 @@ const Transactions = () => {
   const { transactions, categories, pagination, filters, setFilters, refresh } =
     useTransactions(API_URL, token);
 
+  const { accounts } = useAccounts();
+
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -32,6 +35,7 @@ const Transactions = () => {
         <div className="w-full sm:w-auto">
           <AddTransactionDialog
             categories={categories}
+            accounts={accounts}
             onSuccess={refresh}
             open={dialogOpen}
             onOpenChange={setDialogOpen}

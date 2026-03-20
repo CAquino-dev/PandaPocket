@@ -185,3 +185,26 @@ html {
     @apply bg-background text-foreground font-poppins;
   }
 }
+
+/* Account type colors */
+@layer utilities {
+  .account-cash {
+    @apply bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400;
+  }
+  
+  .account-bank {
+    @apply bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400;
+  }
+  
+  .account-savings {
+    @apply bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400;
+  }
+  
+  .account-ewallet {
+    @apply bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400;
+  }
+  
+  .account-credit {
+    @apply bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400;
+  }
+}

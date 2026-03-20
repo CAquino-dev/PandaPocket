@@ -3,8 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useBudgets } from "@/hooks/useBudgets";
 import type { BudgetWithCategory } from "@/types/budget";
 import { getBudgetStatus } from "@/types/budget";
-import BudgetList from "../components/budgets/budgetList";
-import SetBudgetDialog from "../components/budgets/setBudgetDialog";
+import BudgetList from "../components/budgets/BudgetList";
+import SetBudgetDialog from "../components/budgets/SetBudgetDialog";
 import {
   Select,
   SelectContent,

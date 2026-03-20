@@ -17,6 +17,7 @@ import {
   CreditCardIcon,
   HelpCircleIcon,
   WalletMinimal,
+  ChartPie,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -26,7 +27,8 @@ import { UserDropdown } from "./UserDropdown";
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboardIcon },
   { title: "Transactions", url: "/transactions", icon: CreditCardIcon },
-  { title: "Budgets", url: "/budgets", icon: WalletMinimal },
+  { title: "Accounts", url: "/accounts", icon: WalletMinimal },
+  { title: "Budgets", url: "/budgets", icon: ChartPie },
 ];
 
 export function AppSidebar() {
