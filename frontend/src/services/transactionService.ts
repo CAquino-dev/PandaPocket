@@ -6,6 +6,7 @@ export type TransactionFilters = {
   limit?: number;
   type?: "income" | "expense";
   categoryId?: string;
+  accountId?: string;
   search?: string;
   startDate?: string;
   endDate?: string;
@@ -24,13 +25,13 @@ export type PaginatedTransactions = {
 export const getRecentTransactions = async (
   API_URL: string,
   token: string,
-  count: number = 10  
+  count: number = 10
 ) => {
   return getTransactions(API_URL, token, {
     page: 1,
-    limit: count
-  })
-}
+    limit: count,
+  });
+};
 
 export const getTransactions = async (
   API_URL: string,
@@ -43,18 +44,16 @@ export const getTransactions = async (
   if (filters.limit) params.limit = String(filters.limit);
   if (filters.type) params.type = filters.type;
   if (filters.categoryId) params.categoryId = filters.categoryId;
+  if (filters.accountId) params.accountId = filters.accountId;
   if (filters.search) params.search = filters.search;
   if (filters.startDate) params.startDate = filters.startDate;
   if (filters.endDate) params.endDate = filters.endDate;
 
   try {
-    const res = await axios.get(
-      `${API_URL}/api/transactions/transactions`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params,
-      }
-    );
+    const res = await axios.get(`${API_URL}/api/transactions/transactions`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params,
+    });
 
     return res.data as PaginatedTransactions;
   } catch (err) {
