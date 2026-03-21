@@ -32,6 +32,8 @@ import {
   Landmark,
   PiggyBank,
   Banknote,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
 
 import { CategorySelectionDialog } from "./CategorySelectionDialog";
@@ -49,19 +51,7 @@ const ACCOUNT_ICONS: Record<string, React.ReactNode> = {
   bank: <Landmark className="w-4 h-4" />,
   savings: <PiggyBank className="w-4 h-4" />,
   ewallet: <Wallet className="w-4 h-4" />,
-  credit: <DollarSign className="w-4 h-4" />,
-};
-
-// Remove ACCOUNT_COLORS constant since we're using global classes now
-const getAccountColorClass = (type: string): string => {
-  const colorMap: Record<string, string> = {
-    cash: "account-cash",
-    bank: "account-bank",
-    savings: "account-savings",
-    ewallet: "account-ewallet",
-    credit: "account-credit",
-  };
-  return colorMap[type] || "account-bank"; // fallback to bank if type not found
+  credit: <CreditCard className="w-4 h-4" />,
 };
 
 const formatCurrency = (amount: number, currency: string) =>
@@ -102,6 +92,12 @@ const AddTransactionDialog: React.FC<Props> = ({
   const isIncome = form.type === "income";
   const selectedCategory = categories.find((c) => c._id === form.category);
   const selectedAccount = accounts.find((a) => a._id === form.accountId);
+
+  const insufficientBalance =
+    form.type === "expense" &&
+    !!selectedAccount &&
+    selectedAccount.type !== "credit" &&
+    Number(form.amount) > selectedAccount.balance;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -161,8 +157,7 @@ const AddTransactionDialog: React.FC<Props> = ({
           </Button>
         </DialogTrigger>
 
-        {/* Extended width from sm:max-w-md to md:max-w-2xl */}
-        <DialogContent className="sm:max-w-xl md:max-w-2xl p-0 overflow-hidden gap-0">
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden gap-0">
           <DialogDescription className="sr-only">
             Form to add a new income or expense transaction
           </DialogDescription>
@@ -201,7 +196,7 @@ const AddTransactionDialog: React.FC<Props> = ({
             </DialogHeader>
 
             <div className="space-y-5">
-              {/* Type toggle - now in a single row with more space */}
+              {/* Type toggle */}
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Type *</Label>
                 <div className="grid grid-cols-2 gap-2 p-1 bg-muted rounded-lg">
@@ -238,10 +233,10 @@ const AddTransactionDialog: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Account selector - now showing 3 accounts per row with the wider dialog */}
+              {/* Account selector */}
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Account *</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {accounts.map((account) => (
                     <button
                       key={account._id}
@@ -256,7 +251,7 @@ const AddTransactionDialog: React.FC<Props> = ({
                       }`}
                     >
                       <div
-                        className={`p-1.5 rounded-md ${getAccountColorClass(account.type)}`}
+                        className={`p-1.5 rounded-md account-${account.type}`}
                       >
                         {ACCOUNT_ICONS[account.type]}
                       </div>
@@ -264,113 +259,125 @@ const AddTransactionDialog: React.FC<Props> = ({
                         <p className="text-sm font-medium truncate">
                           {account.name}
                         </p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p
+                          className={`text-xs truncate ${
+                            account.balance < 0
+                              ? "text-destructive"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {formatCurrency(account.balance, account.currency)}
                         </p>
                       </div>
                     </button>
                   ))}
                 </div>
+
+                {/* Insufficient balance warning */}
+                {insufficientBalance && (
+                  <div className="flex items-center gap-2 text-sm text-destructive bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-md px-3 py-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    Insufficient balance. Available:{" "}
+                    {formatCurrency(
+                      selectedAccount!.balance,
+                      selectedAccount!.currency,
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Two-column layout for Amount and Date */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Amount */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="amount" className="text-sm font-medium">
-                    Amount *
-                  </Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
-                      {selectedAccount?.currency ?? "₱"}
-                    </span>
-                    <Input
-                      id="amount"
-                      name="amount"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={form.amount}
-                      onChange={handleChange}
-                      className="pl-9"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Date */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="date" className="text-sm font-medium">
-                    Date *
-                  </Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                    <Input
-                      id="date"
-                      name="date"
-                      type="date"
-                      value={form.date}
-                      onChange={handleChange}
-                      className="pl-9"
-                      required
-                      max={new Date().toISOString().split("T")[0]}
-                    />
-                  </div>
+              {/* Amount */}
+              <div className="space-y-1.5">
+                <Label htmlFor="amount" className="text-sm font-medium">
+                  Amount *
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                    {selectedAccount?.currency ?? "₱"}
+                  </span>
+                  <Input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={form.amount}
+                    onChange={handleChange}
+                    className="pl-9"
+                    required
+                  />
                 </div>
               </div>
 
-              {/* Two-column layout for Description and Category */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Description */}
-                <div className="space-y-1.5">
-                  <Label htmlFor="description" className="text-sm font-medium">
-                    Description
-                  </Label>
-                  <div className="relative">
-                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="description"
-                      name="description"
-                      placeholder="e.g. Monthly salary, Groceries…"
-                      value={form.description}
-                      onChange={handleChange}
-                      className="pl-9"
-                    />
-                  </div>
+              {/* Description */}
+              <div className="space-y-1.5">
+                <Label htmlFor="description" className="text-sm font-medium">
+                  Description
+                </Label>
+                <div className="relative">
+                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="description"
+                    name="description"
+                    placeholder="e.g. Monthly salary, Groceries…"
+                    value={form.description}
+                    onChange={handleChange}
+                    className="pl-9"
+                  />
                 </div>
+              </div>
 
-                {/* Category */}
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium">Category *</Label>
-                  <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                    <button
-                      type="button"
-                      onClick={() => setCategoryDialogOpen(true)}
-                      className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    >
-                      {selectedCategory ? (
-                        <span className="flex items-center gap-2">
-                          {selectedCategory.name}
-                          <span
-                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                              selectedCategory.type === "income"
-                                ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
-                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
-                            }`}
-                          >
-                            {selectedCategory.type}
-                          </span>
+              {/* Date */}
+              <div className="space-y-1.5">
+                <Label htmlFor="date" className="text-sm font-medium">
+                  Date *
+                </Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                  <Input
+                    id="date"
+                    name="date"
+                    type="date"
+                    value={form.date}
+                    onChange={handleChange}
+                    className="pl-9"
+                    required
+                    max={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Category *</Label>
+                <div className="relative">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setCategoryDialogOpen(true)}
+                    className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    {selectedCategory ? (
+                      <span className="flex items-center gap-2">
+                        {selectedCategory.name}
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                            selectedCategory.type === "income"
+                              ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
+                              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                          }`}
+                        >
+                          {selectedCategory.type}
                         </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          Select a category
-                        </span>
-                      )}
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  </div>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Select a category
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </button>
                 </div>
               </div>
 
@@ -395,7 +402,8 @@ const AddTransactionDialog: React.FC<Props> = ({
                   !form.category ||
                   !form.accountId ||
                   !form.date ||
-                  Number(form.amount) <= 0
+                  Number(form.amount) <= 0 ||
+                  insufficientBalance
                 }
                 className={`flex-1 text-white transition-colors ${
                   isIncome
