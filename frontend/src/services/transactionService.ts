@@ -50,14 +50,17 @@ export const getTransactions = async (
   if (filters.endDate) params.endDate = filters.endDate;
 
   try {
-    const res = await axios.get(`${API_URL}/api/transactions/transactions`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params,
-    });
+    const res = await axios.get<PaginatedTransactions>(
+      `${API_URL}/api/transactions/transactions`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      }
+    );
 
-    return res.data as PaginatedTransactions;
-  } catch (err) {
-    throw new Error("Failed to fetch transactions");
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || "Failed to fetch transactions");
   }
 };
 
@@ -81,5 +84,22 @@ export const createTransaction = async (
     return res.data;
   } catch (err: any) {
     throw new Error(err.response?.data?.message || "Failed to create transaction");
+  }
+};
+
+export const deleteTransaction = async (
+  API_URL: string,
+  token: string,
+  transactionId: string
+) => {
+  try {
+    await axios.delete(
+      `${API_URL}/api/transactions/${transactionId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || "Failed to delete transaction");
   }
 };
