@@ -1,5 +1,5 @@
 import type { BudgetWithCategory } from "@/types/budget";
-import BudgetItem from "./budgetItem";
+import BudgetItem from "./BudgetItem";
 import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";

@@ -80,23 +80,24 @@ const Budgets = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
             Budgets
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             Set limits and track your spending
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Select
             value={String(month)}
             onValueChange={(val) => setMonth(Number(val))}
           >
-            <SelectTrigger className="w-36 bg-background">
+            <SelectTrigger className="w-[calc(50%-0.25rem)] sm:w-36 bg-background">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -112,7 +113,7 @@ const Budgets = () => {
             value={String(year)}
             onValueChange={(val) => setYear(Number(val))}
           >
-            <SelectTrigger className="w-28 bg-background">
+            <SelectTrigger className="w-[calc(50%-0.25rem)] sm:w-28 bg-background">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -135,35 +136,49 @@ const Budgets = () => {
         </div>
       </div>
 
+      {/* Over budget warning */}
       {overBudget.length > 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-300 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+        <div className="flex items-center gap-3 rounded-xl border border-red-300 bg-red-50 dark:bg-red-950/20 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-red-700 dark:text-red-400">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          {overBudget.length}{" "}
-          {overBudget.length === 1 ? "category has" : "categories have"}{" "}
-          exceeded their budget this month
+          <span>
+            {overBudget.length}{" "}
+            {overBudget.length === 1 ? "category has" : "categories have"}{" "}
+            exceeded their budget this month
+          </span>
         </div>
       )}
 
+      {/* Summary cards */}
       {budgets.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Total budgeted</p>
-            <p className="text-2xl font-bold mt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Total budgeted
+            </p>
+            <p className="text-xl sm:text-2xl font-bold mt-1">
               {formatCurrency(totalBudgeted)}
             </p>
           </div>
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Total spent</p>
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Total spent
+            </p>
             <p
-              className={`text-2xl font-bold mt-1 ${totalSpent > totalBudgeted ? "text-red-500" : "text-amber-500"}`}
+              className={`text-xl sm:text-2xl font-bold mt-1 ${
+                totalSpent > totalBudgeted ? "text-red-500" : "text-amber-500"
+              }`}
             >
               {formatCurrency(totalSpent)}
             </p>
           </div>
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Remaining</p>
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Remaining
+            </p>
             <p
-              className={`text-2xl font-bold mt-1 ${totalRemaining >= 0 ? "text-green-500" : "text-red-500"}`}
+              className={`text-xl sm:text-2xl font-bold mt-1 ${
+                totalRemaining >= 0 ? "text-green-500" : "text-red-500"
+              }`}
             >
               {formatCurrency(totalRemaining)}
             </p>

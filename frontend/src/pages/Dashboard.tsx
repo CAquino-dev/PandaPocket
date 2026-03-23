@@ -31,6 +31,13 @@ const MONTHS = [
 
 const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+};
+
 const Dashboard = () => {
   const {
     summary,
@@ -46,26 +53,30 @@ const Dashboard = () => {
     error,
   } = useAnalytics();
   const API_URL = import.meta.env.VITE_API_URL;
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   if (!token) return <div>Loading...</div>;
 
   const { recentTransactions } = useTransactions(API_URL, token);
   console.log(recentTransactions);
 
+  const greeting = getGreeting();
+  const userName = user?.name?.split(" ")[0] || "";
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header with Greeting and Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary">
-            Dashboard
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
+            {greeting}
+            {userName ? `, ${userName}` : ""}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Your financial overview
+            Here's your financial overview
           </p>
         </div>
 
-        {/* Controls */}
+        {/* Controls - Right side on desktop, bottom on mobile */}
         <div className="flex items-center gap-2">
           <Select
             value={String(month)}

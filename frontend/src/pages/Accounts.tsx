@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { useAccounts } from "@/hooks/useAccounts";
+import { useAuth } from "@/context/AuthContext";
 import type { IAccount } from "@/types/accounts";
 import AccountList from "@/components/accounts/AccountList";
 import AddAccountDialog from "@/components/accounts/AddAccountDialog";
 import EditAccountDialog from "@/components/accounts/EditAccountDialog";
 import { deleteAccount } from "@/services/accountsService";
-import { useAuth } from "@/context/AuthContext";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useAccounts } from "@/hooks/useAccounts";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-PH", {
@@ -36,7 +34,8 @@ const Accounts = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-primary">
@@ -47,36 +46,43 @@ const Accounts = () => {
           </p>
         </div>
 
-        <Button
-          size="sm"
-          className="gap-1.5 w-full sm:w-auto"
-          onClick={() => setAddOpen(true)}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add Account
-        </Button>
+        <div className="w-full sm:w-auto">
+          <AddAccountDialog
+            open={addOpen}
+            onOpenChange={setAddOpen}
+            onSuccess={refresh}
+          />
+        </div>
       </div>
 
       {/* Total balance summary */}
       {accounts.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-xl bg-muted/50 p-4 sm:col-span-1">
-            <p className="text-sm text-muted-foreground">Total balance</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Total balance
+            </p>
             <p
-              className={`text-2xl font-bold mt-1 ${
+              className={`text-xl sm:text-2xl font-bold mt-1 ${
                 totalBalance < 0 ? "text-red-500" : "text-foreground"
               }`}
             >
               {formatCurrency(totalBalance)}
             </p>
           </div>
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Total accounts</p>
-            <p className="text-2xl font-bold mt-1">{accounts.length}</p>
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Total accounts
+            </p>
+            <p className="text-xl sm:text-2xl font-bold mt-1">
+              {accounts.length}
+            </p>
           </div>
-          <div className="rounded-xl bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">Highest balance</p>
-            <p className="text-2xl font-bold mt-1">
+          <div className="rounded-xl bg-muted/50 p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Highest balance
+            </p>
+            <p className="text-xl sm:text-2xl font-bold mt-1">
               {formatCurrency(Math.max(...accounts.map((a) => a.balance)))}
             </p>
           </div>
@@ -101,12 +107,6 @@ const Accounts = () => {
           onAddClick={() => setAddOpen(true)}
         />
       )}
-
-      <AddAccountDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        onSuccess={refresh}
-      />
 
       <EditAccountDialog
         open={!!editingAccount}
