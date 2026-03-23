@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Wallet, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { navLinks } from "./data/landingData";
 import { ThemeToggle } from "../layout/ThemeToggle";
+import redPanda from "../../assets/red-panda.png";
 
 const Navigation = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -35,10 +36,10 @@ const Navigation = () => {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <Wallet
-              className={`w-8 h-8 mr-2 ${
-                showScrolledBackground ? "text-[#347571]" : "text-white"
-              }`}
+            <img
+              src={redPanda}
+              alt="Red Panda"
+              className={`w-25 h-25 object-contain`}
             />
             <span
               className={`text-2xl font-bold ${
@@ -47,7 +48,7 @@ const Navigation = () => {
                   : "text-white"
               }`}
             >
-              FinWise
+              PandaPocket
             </span>
           </Link>
 

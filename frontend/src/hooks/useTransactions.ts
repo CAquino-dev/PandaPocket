@@ -4,7 +4,11 @@ import type { TransactionFilters, PaginatedTransactions } from "@/services/trans
 import { getTransactions, getRecentTransactions } from "@/services/transactionService";
 import { getCategories } from "@/services/categoryService";
 
-export const useTransactions = (API_URL: string, token: string) => {
+export const useTransactions = (
+  API_URL: string,
+  token: string,
+  initialFilters: TransactionFilters = {}
+) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [pagination, setPagination] = useState<PaginatedTransactions["pagination"] | null>(null);
@@ -13,13 +17,14 @@ export const useTransactions = (API_URL: string, token: string) => {
   const [filters, setFilters] = useState<TransactionFilters>({
     page: 1,
     limit: 10,
+    ...initialFilters,
   });
 
   const fetchAll = async () => {
     const [cat, tx, rc] = await Promise.all([
       getCategories(API_URL, token),
       getTransactions(API_URL, token, filters),
-      getRecentTransactions(API_URL, token)
+      getRecentTransactions(API_URL, token),
     ]);
 
     setCategories(cat);

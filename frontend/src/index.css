@@ -136,9 +136,9 @@ html {
   --popover: oklch(0.18 0 0);
   --popover-foreground: oklch(0.95 0 0);
   
-  /* Use your custom theme colors in dark mode */
+  /* Use your custom theme colors in dark mode - FIXED: lighter text on dark background */
   --primary: #4A918C;  /* Primary-light for better visibility */
-  --primary-foreground: oklch(0.15 0 0);
+  --primary-foreground: oklch(0.95 0 0); /* Changed to light/white text */
   
   --secondary: oklch(0.25 0 0);
   --secondary-foreground: oklch(0.95 0 0);
@@ -146,16 +146,18 @@ html {
   --muted: oklch(0.22 0 0);
   --muted-foreground: oklch(0.7 0 0);
   
-  /* Use money green for accent in dark mode */
+  /* Use money green for accent in dark mode - FIXED: light text on dark accent */
   --accent: #22C55E;  /* Money-light for dark mode */
-  --accent-foreground: oklch(0.15 0 0);
-
+  --accent-foreground: oklch(0.15 0 0); /* Keep dark text for light green background */
+  
   /* Lighter red for dark mode */
   --expense: #F87171;
   --expense-light: #FCA5A5;
   --expense-dark: #EF4444;
   
   --destructive: oklch(0.6 0.2 25);
+  --destructive-foreground: oklch(0.95 0 0); /* Add destructive foreground for light text */
+  
   --border: oklch(0.3 0 0);
   --input: oklch(0.25 0 0);
   --ring: #4A918C;  /* Primary-light for focus rings */
@@ -176,7 +178,6 @@ html {
   --sidebar-border: oklch(0.25 0 0);
   --sidebar-ring: #22C55E;                  /* Money-light for focus rings */
 }
-
 @layer base {
   * {
     @apply border-border outline-ring/50;

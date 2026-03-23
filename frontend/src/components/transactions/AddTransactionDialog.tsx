@@ -157,7 +157,8 @@ const AddTransactionDialog: React.FC<Props> = ({
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden gap-0">
+        {/* Extended width - from sm:max-w-md to lg:max-w-3xl */}
+        <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl p-0 overflow-hidden gap-0">
           <DialogDescription className="sr-only">
             Form to add a new income or expense transaction
           </DialogDescription>
@@ -233,10 +234,10 @@ const AddTransactionDialog: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Account selector */}
+              {/* Account selector - 3 columns on medium screens */}
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Account *</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {accounts.map((account) => (
                     <button
                       key={account._id}
@@ -286,98 +287,104 @@ const AddTransactionDialog: React.FC<Props> = ({
                 )}
               </div>
 
-              {/* Amount */}
-              <div className="space-y-1.5">
-                <Label htmlFor="amount" className="text-sm font-medium">
-                  Amount *
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
-                    {selectedAccount?.currency ?? "₱"}
-                  </span>
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={form.amount}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                  />
+              {/* Two-column layout for Amount and Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Amount */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="amount" className="text-sm font-medium">
+                    Amount *
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                      {selectedAccount?.currency ?? "₱"}
+                    </span>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.amount}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="date" className="text-sm font-medium">
+                    Date *
+                  </Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <Input
+                      id="date"
+                      name="date"
+                      type="date"
+                      value={form.date}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-1.5">
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="description"
-                    name="description"
-                    placeholder="e.g. Monthly salary, Groceries…"
-                    value={form.description}
-                    onChange={handleChange}
-                    className="pl-9"
-                  />
+              {/* Two-column layout for Description and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="description" className="text-sm font-medium">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="description"
+                      name="description"
+                      placeholder="e.g. Monthly salary, Groceries…"
+                      value={form.description}
+                      onChange={handleChange}
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Date */}
-              <div className="space-y-1.5">
-                <Label htmlFor="date" className="text-sm font-medium">
-                  Date *
-                </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                    max={new Date().toISOString().split("T")[0]}
-                  />
-                </div>
-              </div>
-
-              {/* Category */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Category *</Label>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <button
-                    type="button"
-                    onClick={() => setCategoryDialogOpen(true)}
-                    className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    {selectedCategory ? (
-                      <span className="flex items-center gap-2">
-                        {selectedCategory.name}
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                            selectedCategory.type === "income"
-                              ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
-                              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
-                          }`}
-                        >
-                          {selectedCategory.type}
+                {/* Category */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Category *</Label>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={() => setCategoryDialogOpen(true)}
+                      className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      {selectedCategory ? (
+                        <span className="flex items-center gap-2">
+                          {selectedCategory.name}
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                              selectedCategory.type === "income"
+                                ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {selectedCategory.type}
+                          </span>
                         </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Select a category
-                      </span>
-                    )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </button>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Select a category
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
                 </div>
               </div>
 

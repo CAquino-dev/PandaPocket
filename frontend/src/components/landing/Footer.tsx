@@ -13,7 +13,7 @@ const Footer = ({ links }: FooterProps) => {
           <div>
             <div className="flex items-center mb-4">
               <Wallet className="w-6 h-6 text-[#5DBB8A] mr-2" />
-              <span className="text-xl font-bold">FinWise</span>
+              <span className="text-xl font-bold">PandaPocket</span>
             </div>
             <p className="text-gray-400 text-sm">
               Making financial management simple, intuitive, and accessible for
@@ -62,7 +62,7 @@ const Footer = ({ links }: FooterProps) => {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; 2024 FinWise. All rights reserved.</p>
+          <p>&copy; 2026 PandaPocket. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useSearchParams } from "react-router-dom";
 
 import TransactionList from "@/components/transactions/TransactionList";
 import TransactionSummary from "@/components/transactions/TransactionSummary";
@@ -12,11 +13,14 @@ const Transactions = () => {
   const { token } = useAuth();
   const API_URL = import.meta.env.VITE_API_URL;
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchParams] = useSearchParams();
 
   if (!token) return <div>Loading...</div>;
 
+  const accountIdFromUrl = searchParams.get("accountId") ?? undefined;
+
   const { transactions, categories, pagination, filters, setFilters, refresh } =
-    useTransactions(API_URL, token);
+    useTransactions(API_URL, token, { accountId: accountIdFromUrl });
 
   const { accounts } = useAccounts();
 

@@ -62,7 +62,7 @@ const AccountCard = ({ account, onEdit, onDelete }: Props) => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-destructive hover:text-destructive"
+            className="h-7 w-7 text-destructive hover:bg-(--color-expense)!"
             onClick={() => onDelete(account._id)}
           >
             <Trash2 className="w-3.5 h-3.5" />
