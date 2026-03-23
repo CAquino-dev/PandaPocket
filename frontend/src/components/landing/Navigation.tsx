@@ -39,7 +39,7 @@ const Navigation = () => {
             <img
               src={redPanda}
               alt="Red Panda"
-              className={`w-25 h-25 object-contain`}
+              className={`w-20 h-20 object-contain`}
             />
             <span
               className={`text-2xl font-bold ${
