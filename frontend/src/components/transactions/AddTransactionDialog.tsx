@@ -24,7 +24,6 @@ import {
   TrendingUp,
   TrendingDown,
   Tag,
-  DollarSign,
   FileText,
   Calendar,
   ChevronRight,
