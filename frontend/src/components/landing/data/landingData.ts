@@ -5,7 +5,6 @@ import {
   Target,
   BarChart3,
   Smartphone,
-  type LucideIcon,
 } from "lucide-react";
 import type { Feature, Testimonial, HowItWorkStep, FooterLinks } from "../../../types/landing";
 

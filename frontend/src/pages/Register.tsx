@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import moneyBackground from "../assets/landingPage/moneyBackground.jpg";
 import Navigation from "../components/landing/Navigation";
 import { toast } from "sonner";
 
 const Register = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");

@@ -31,15 +31,41 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center gap-2 rounded-full border border-border bg-money/10 px-3 py-1.5 transition-all hover:scale-105 hover:bg-money/20 dark:bg-primary/20 dark:hover:bg-primary/30"
+      className={cn(
+        "relative flex items-center gap-2 rounded-full px-3 py-1.5 transition-all duration-300",
+        "hover:scale-105 active:scale-95",
+        // Light mode styles
+        "bg-money/10 text-money",
+        "hover:bg-money/20",
+        // Dark mode styles
+        "dark:bg-primary/20 dark:text-primary-light",
+        "dark:hover:bg-primary/30",
+      )}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      {isDark ? (
-        <MoonIcon className="h-4 w-4 text-primary-light" />
-      ) : (
-        <SunIcon className="h-4 w-4 text-money" />
-      )}
-      <span className="sr-only">{isDark ? "Dark mode" : "Light mode"}</span>
+      {/* Animated icon container */}
+      <div className="relative w-4 h-4">
+        <SunIcon
+          className={cn(
+            "absolute inset-0 h-4 w-4 transition-all duration-300",
+            isDark
+              ? "opacity-0 rotate-90 scale-0"
+              : "opacity-100 rotate-0 scale-100",
+          )}
+        />
+        <MoonIcon
+          className={cn(
+            "absolute inset-0 h-4 w-4 transition-all duration-300",
+            isDark
+              ? "opacity-100 rotate-0 scale-100"
+              : "opacity-0 -rotate-90 scale-0",
+          )}
+        />
+      </div>
+
+      <span className="sr-only">
+        {isDark ? "Switch to light mode" : "Switch to dark mode"}
+      </span>
     </button>
   );
 }

@@ -10,8 +10,6 @@ const Navigation = () => {
   const [scrolled, setScrolled] = useState<boolean>(false);
   const location = useLocation();
   const isLandingPage = location.pathname === "/";
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -39,7 +37,7 @@ const Navigation = () => {
             <img
               src={redPanda}
               alt="Red Panda"
-              className={`w-20 h-20 object-contain`}
+              className={`w-15 h-15 object-contain`}
             />
             <span
               className={`text-2xl font-bold ${
