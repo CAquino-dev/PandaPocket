@@ -9,6 +9,7 @@ import LandingPage from "./pages/LandingPage";
 import Budgets from "./pages/Budgets";
 import Accounts from "./pages/Accounts";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         </Route>
       </Routes>
       <Toaster position="top-right" richColors closeButton />
+      <Analytics />
     </BrowserRouter>
   );
 }
