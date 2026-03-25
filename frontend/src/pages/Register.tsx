@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import moneyBackground from "../assets/landingPage/moneyBackground.jpg";
 import Navigation from "../components/landing/Navigation";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -23,30 +24,17 @@ const Register = () => {
     // Validate passwords match first
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
-      return; // Don't set isSubmitting to true at all
+      return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/users/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, password }),
-        },
-      );
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        toast.error(responseData.message || "Registration failed");
-        setIsSubmitting(false);
-        return;
-      }
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/users/register`, {
+        name,
+        email,
+        password,
+      });
 
       // Success toast
       toast.success("Account created successfully!");
@@ -55,9 +43,15 @@ const Register = () => {
       setTimeout(() => {
         navigate("/login");
       }, 1500);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error("An error occurred during registration");
+
+      const message =
+        error.response?.data?.message ||
+        "An error occurred during registration";
+
+      toast.error(message);
+    } finally {
       setIsSubmitting(false);
     }
   };
