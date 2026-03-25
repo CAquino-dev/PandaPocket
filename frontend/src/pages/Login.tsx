@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import moneyBackground from "../assets/landingPage/moneyBackground.jpg";
 import Navigation from "../components/landing/Navigation";
 import { toast } from "sonner";
+import axios from "axios";
 
 const HeroSection = () => {
   const { login } = useAuth();
@@ -21,31 +22,23 @@ const HeroSection = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
+      const { data } = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/users/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        },
+        { email, password },
       );
 
-      const responseData = await response.json();
+      const { user, token } = data.data;
 
-      if (!response.ok) {
-        toast.error(responseData.message || "Login failed");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const { user, token } = responseData.data;
       login(user, token);
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("An error occurred during login");
+
+      const message =
+        error.response?.data?.message || "An error occurred during login";
+
+      toast.error(message);
+    } finally {
       setIsSubmitting(false);
     }
   };
