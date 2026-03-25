@@ -4,18 +4,19 @@ import mongoose from "mongoose";
 
 export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const { type, amount, categoryId, description, date } = req.body;
-
+    const { type, amount, categoryId, accountId, description, date } = req.body;
     const userId = new mongoose.Types.ObjectId(req.user!.id);
 
-    if (!type || !amount || !categoryId || !date) {
-      return res.status(400).json({
-        message: "Type, amount, categoryId and date are required",
+    if (!type || !amount || !categoryId || !accountId || !date) {
+      res.status(400).json({
+        message: "Type, amount, categoryId, accountId and date are required",
       });
+      return;
     }
 
     const transaction = await transactionService.createTransaction({
       userId,
+      accountId: new mongoose.Types.ObjectId(accountId),
       type,
       amount,
       categoryId,
@@ -35,6 +36,22 @@ export const getTransactions = async (req: Request, res: Response) => {
 
     const transactions = await transactionService.getUserTransactions({
       userId,
+      page: req.query.page ? Number(req.query.page) : 1,
+      limit: req.query.limit ? Number(req.query.limit) : 10,
+      type: req.query.type as "income" | "expense",
+      categoryId: req.query.categoryId
+        ? new mongoose.Types.ObjectId(req.query.categoryId as string)
+        : undefined,
+      accountId: req.query.accountId
+        ? new mongoose.Types.ObjectId(req.query.accountId as string)
+        : undefined,
+      search: req.query.search as string,
+      startDate: req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : undefined,
+      endDate: req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : undefined,
     });
 
     res.status(200).json(transactions);
@@ -46,10 +63,11 @@ export const getTransactions = async (req: Request, res: Response) => {
 export const deleteTransaction = async (req: Request, res: Response) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.user!.id);
-    const idParam = req.params.id;
+    const idParam = req.params.id as string;
 
-    if (!idParam || Array.isArray(idParam)) {
-      return res.status(400).json({ message: "Invalid transaction id" });
+    if (!idParam) {
+      res.status(400).json({ message: "Invalid transaction id" });
+      return;
     }
 
     await transactionService.deleteTransaction({

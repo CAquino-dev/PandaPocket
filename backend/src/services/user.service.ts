@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { User } from "../models/user.model";
 import { jwtConfig } from "../config/jwt";
 import jwt from "jsonwebtoken";
+import Account from "../models/accounts.model"
 
 interface RegisterUserInput {
   name: string;
@@ -14,27 +15,35 @@ interface LoginUserInput {
   password: string;
 }
 
+const DEFAULT_ACCOUNTS = [
+  { name: "Cash",    type: "cash",    balance: 0, currency: "PHP" },
+  { name: "Bank",    type: "bank",    balance: 0, currency: "PHP" },
+  { name: "Savings", type: "savings", balance: 0, currency: "PHP" },
+  { name: "Wallet",  type: "ewallet", balance: 0, currency: "PHP" },
+];
+
 export const registerUser = async (data: RegisterUserInput) => {
   const { name, email, password } = data;
 
-  // 1. Check if user already exists
   const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new Error("Email already registered");
-  }
+  if (existingUser) throw new Error("Email already registered");
 
-  // 2. Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  // 3. Create user
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
   });
 
-  // 4. Return safe user data
+  await Account.insertMany(
+    DEFAULT_ACCOUNTS.map((account) => ({
+      ...account,
+      userId: user._id,
+    }))
+  );
+
   return {
     id: user._id,
     name: user.name,

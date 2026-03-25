@@ -17,3 +17,6 @@ backend/dist/
 .vscode/
 .idea/
 .DS_Store
+
+# Roadmap file
+finance_app_roadmap.html

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuthToken } from "@/context/AuthContext";
 import type { Category } from "../../types/transactions";
+import type { IAccount } from "../../types/accounts";
 import { createTransaction } from "@/services/transactionService";
 
 import {
@@ -23,22 +24,45 @@ import {
   TrendingUp,
   TrendingDown,
   Tag,
-  DollarSign,
   FileText,
   Calendar,
   ChevronRight,
-  X,
+  Wallet,
+  Landmark,
+  PiggyBank,
+  Banknote,
+  CreditCard,
+  AlertCircle,
 } from "lucide-react";
+
+import { CategorySelectionDialog } from "./CategorySelectionDialog";
 
 interface Props {
   categories: Category[];
+  accounts: IAccount[];
   onSuccess: () => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
+const ACCOUNT_ICONS: Record<string, React.ReactNode> = {
+  cash: <Banknote className="w-4 h-4" />,
+  bank: <Landmark className="w-4 h-4" />,
+  savings: <PiggyBank className="w-4 h-4" />,
+  ewallet: <Wallet className="w-4 h-4" />,
+  credit: <CreditCard className="w-4 h-4" />,
+};
+
+const formatCurrency = (amount: number, currency: string) =>
+  new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+
 const AddTransactionDialog: React.FC<Props> = ({
   categories,
+  accounts,
   onSuccess,
   open: externalOpen,
   onOpenChange,
@@ -49,15 +73,15 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [internalOpen, setInternalOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
-  // Use external control if provided, otherwise use internal state
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
   const [form, setForm] = useState({
     description: "",
     amount: "",
-    type: "income",
+    type: "income" as "income" | "expense",
     category: "",
+    accountId: "",
     date: new Date().toISOString().split("T")[0],
   });
 
@@ -65,10 +89,14 @@ const AddTransactionDialog: React.FC<Props> = ({
   const [error, setError] = useState<string | null>(null);
 
   const isIncome = form.type === "income";
-
-  const filteredCategories = categories.filter((c) => c.type === form.type);
-
   const selectedCategory = categories.find((c) => c._id === form.category);
+  const selectedAccount = accounts.find((a) => a._id === form.accountId);
+
+  const insufficientBalance =
+    form.type === "expense" &&
+    !!selectedAccount &&
+    selectedAccount.type !== "credit" &&
+    Number(form.amount) > selectedAccount.balance;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -86,6 +114,7 @@ const AddTransactionDialog: React.FC<Props> = ({
       amount: "",
       type: "income",
       category: "",
+      accountId: "",
       date: new Date().toISOString().split("T")[0],
     });
   };
@@ -95,21 +124,17 @@ const AddTransactionDialog: React.FC<Props> = ({
       setLoading(true);
       setError(null);
 
-      const selectedCategory = categories.find((c) => c._id === form.category);
+      if (!selectedCategory) throw new Error("Please select a category");
+      if (!form.accountId) throw new Error("Please select an account");
 
-      if (!selectedCategory) {
-        throw new Error("Please select a category");
-      }
-
-      const requestBody = {
+      await createTransaction(API_URL, token, {
         type: form.type,
         amount: Number(form.amount),
         categoryId: selectedCategory._id,
+        accountId: form.accountId,
         description: form.description,
         date: form.date,
-      };
-
-      await createTransaction(API_URL, token, requestBody);
+      });
 
       resetForm();
       setOpen(false);
@@ -125,18 +150,18 @@ const AddTransactionDialog: React.FC<Props> = ({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white shadow-sm">
+          <Button className="gap-2 bg-(--color-primary) hover:bg-[var(--color-primary-dark)] text-white shadow-sm">
             <Plus className="w-4 h-4" />
             Add Transaction
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden gap-0">
+        {/* Extended width - from sm:max-w-md to lg:max-w-3xl */}
+        <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-3xl p-0 overflow-hidden gap-0">
           <DialogDescription className="sr-only">
             Form to add a new income or expense transaction
           </DialogDescription>
 
-          {/* Modal color bar */}
           <div
             className={`h-1.5 w-full transition-colors duration-300 ${
               isIncome ? "bg-[var(--color-money)]" : "bg-[var(--color-expense)]"
@@ -208,100 +233,160 @@ const AddTransactionDialog: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Account selector - 3 columns on medium screens */}
               <div className="space-y-1.5">
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="description"
-                    name="description"
-                    placeholder="e.g. Monthly salary, Groceries…"
-                    value={form.description}
-                    onChange={handleChange}
-                    className="pl-9"
-                  />
-                </div>
-              </div>
-
-              {/* Amount */}
-              <div className="space-y-1.5">
-                <Label htmlFor="amount" className="text-sm font-medium">
-                  Amount *
-                </Label>
-                <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="amount"
-                    name="amount"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={form.amount}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Date */}
-              <div className="space-y-1.5">
-                <Label htmlFor="date" className="text-sm font-medium">
-                  Date *
-                </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <Input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={form.date}
-                    onChange={handleChange}
-                    className="pl-9"
-                    required
-                    max={new Date().toISOString().split("T")[0]} // Can't select future dates
-                  />
-                </div>
-              </div>
-
-              {/* Category - Now as a button that opens a dialog */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Category *</Label>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
-                  <button
-                    type="button"
-                    onClick={() => setCategoryDialogOpen(true)}
-                    className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {selectedCategory ? (
-                      <span className="flex items-center gap-2">
-                        {selectedCategory.name}
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                            selectedCategory.type === "income"
-                              ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
-                              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                <Label className="text-sm font-medium">Account *</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {accounts.map((account) => (
+                    <button
+                      key={account._id}
+                      type="button"
+                      onClick={() =>
+                        handleSelectChange("accountId", account._id)
+                      }
+                      className={`flex items-center gap-2.5 p-3 rounded-lg border text-left transition-all ${
+                        form.accountId === account._id
+                          ? "border-primary bg-primary/5 dark:bg-primary/10"
+                          : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-md account-${account.type}`}
+                      >
+                        {ACCOUNT_ICONS[account.type]}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {account.name}
+                        </p>
+                        <p
+                          className={`text-xs truncate ${
+                            account.balance < 0
+                              ? "text-destructive"
+                              : "text-muted-foreground"
                           }`}
                         >
-                          {selectedCategory.type}
-                        </span>
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        Select a category
-                      </span>
+                          {formatCurrency(account.balance, account.currency)}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Insufficient balance warning */}
+                {insufficientBalance && (
+                  <div className="flex items-center gap-2 text-sm text-destructive bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-md px-3 py-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    Insufficient balance. Available:{" "}
+                    {formatCurrency(
+                      selectedAccount!.balance,
+                      selectedAccount!.currency,
                     )}
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Two-column layout for Amount and Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Amount */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="amount" className="text-sm font-medium">
+                    Amount *
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                      {selectedAccount?.currency ?? "₱"}
+                    </span>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.amount}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="date" className="text-sm font-medium">
+                    Date *
+                  </Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <Input
+                      id="date"
+                      name="date"
+                      type="date"
+                      value={form.date}
+                      onChange={handleChange}
+                      className="pl-9"
+                      required
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Error */}
+              {/* Two-column layout for Description and Category */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="description" className="text-sm font-medium">
+                    Description
+                  </Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      id="description"
+                      name="description"
+                      placeholder="e.g. Monthly salary, Groceries…"
+                      value={form.description}
+                      onChange={handleChange}
+                      className="pl-9"
+                    />
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div className="space-y-1.5">
+                  <Label className="text-sm font-medium">Category *</Label>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={() => setCategoryDialogOpen(true)}
+                      className="flex items-center justify-between w-full h-10 px-3 py-2 pl-9 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    >
+                      {selectedCategory ? (
+                        <span className="flex items-center gap-2">
+                          {selectedCategory.name}
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                              selectedCategory.type === "income"
+                                ? "bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-400"
+                                : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                            }`}
+                          >
+                            {selectedCategory.type}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Select a category
+                        </span>
+                      )}
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               {error && (
                 <div className="text-sm text-[var(--color-expense)] bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-md px-3 py-2">
                   {error}
@@ -321,8 +406,10 @@ const AddTransactionDialog: React.FC<Props> = ({
                   loading ||
                   !form.amount ||
                   !form.category ||
+                  !form.accountId ||
                   !form.date ||
-                  Number(form.amount) <= 0
+                  Number(form.amount) <= 0 ||
+                  insufficientBalance
                 }
                 className={`flex-1 text-white transition-colors ${
                   isIncome
@@ -365,76 +452,18 @@ const AddTransactionDialog: React.FC<Props> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Category Selection Dialog */}
-      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Select a Category</DialogTitle>
-            <DialogDescription>
-              Choose a category for your {form.type}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="max-h-[400px] overflow-y-auto py-2">
-            {filteredCategories.length === 0 ? (
-              <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-                No categories found for {form.type}
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredCategories.map((category) => (
-                  <button
-                    key={category._id}
-                    type="button"
-                    onClick={() => {
-                      handleSelectChange("category", category._id);
-                      setCategoryDialogOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
-                      form.category === category._id
-                        ? category.type === "income"
-                          ? "border-green-500 bg-green-50 dark:bg-green-950/20"
-                          : "border-red-500 bg-red-50 dark:bg-red-950/20"
-                        : "border-transparent hover:border-muted-foreground/20 hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`p-2 rounded-full ${
-                          category.type === "income"
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                        }`}
-                      >
-                        <Tag className="w-4 h-4" />
-                      </div>
-                      <div className="text-left">
-                        <div className="font-medium">{category.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {category.type === "income" ? "Income" : "Expense"}{" "}
-                          category
-                        </div>
-                      </div>
-                    </div>
-                    {form.category === category._id && (
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setCategoryDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CategorySelectionDialog
+        open={categoryDialogOpen}
+        onOpenChange={setCategoryDialogOpen}
+        categories={categories}
+        selectedType={form.type}
+        selectedCategoryId={form.category}
+        onSelectCategory={(categoryId) => {
+          handleSelectChange("category", categoryId);
+          setCategoryDialogOpen(false);
+        }}
+        onCategoryCreated={onSuccess}
+      />
     </>
   );
 };

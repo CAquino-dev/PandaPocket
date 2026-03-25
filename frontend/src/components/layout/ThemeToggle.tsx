@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { SunIcon, MoonIcon } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle() {
@@ -25,27 +24,48 @@ export function ThemeToggle() {
     }
   }, [isDark]);
 
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+  };
+
   return (
-    <div className="flex items-center gap-2 rounded-full border border-border bg-money/10 px-3 py-1.5 transition-colors dark:bg-primary/20">
-      <SunIcon
-        className={cn(
-          "h-4 w-4",
-          !isDark ? "text-money" : "text-muted-foreground",
-        )}
-      />
+    <button
+      onClick={toggleTheme}
+      className={cn(
+        "relative flex items-center gap-2 rounded-full px-3 py-1.5 transition-all duration-300",
+        "hover:scale-105 active:scale-95",
+        // Light mode styles
+        "bg-money/10 text-money",
+        "hover:bg-money/20",
+        // Dark mode styles
+        "dark:bg-primary/20 dark:text-primary-light",
+        "dark:hover:bg-primary/30",
+      )}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {/* Animated icon container */}
+      <div className="relative w-4 h-4">
+        <SunIcon
+          className={cn(
+            "absolute inset-0 h-4 w-4 transition-all duration-300",
+            isDark
+              ? "opacity-0 rotate-90 scale-0"
+              : "opacity-100 rotate-0 scale-100",
+          )}
+        />
+        <MoonIcon
+          className={cn(
+            "absolute inset-0 h-4 w-4 transition-all duration-300",
+            isDark
+              ? "opacity-100 rotate-0 scale-100"
+              : "opacity-0 -rotate-90 scale-0",
+          )}
+        />
+      </div>
 
-      <Switch
-        checked={isDark}
-        onCheckedChange={setIsDark}
-        className="data-[state=checked]:bg-money dark:data-[state=checked]:bg-primary-light"
-      />
-
-      <MoonIcon
-        className={cn(
-          "h-4 w-4",
-          isDark ? "text-primary-light" : "text-muted-foreground",
-        )}
-      />
-    </div>
+      <span className="sr-only">
+        {isDark ? "Switch to light mode" : "Switch to dark mode"}
+      </span>
+    </button>
   );
 }

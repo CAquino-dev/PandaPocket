@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as categoryService from "../services/category.service";
 import mongoose from "mongoose";
+import { CategoryType } from "../models/category.model";
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
@@ -25,13 +26,12 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    
     const userId = new mongoose.Types.ObjectId(req.user!.id);
-    const type = req.query.type as string | undefined;
+    const type = req.query.type as CategoryType | undefined;
 
     const categories = await categoryService.getCategories({
       userId,
-      type: type as any,
+      type,
     });
 
     res.status(200).json(categories);

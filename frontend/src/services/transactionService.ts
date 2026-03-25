@@ -1,23 +1,67 @@
-import type { Transaction, Category } from "../types/transactions";
+import axios from "axios";
+import type { Transaction } from "../types/transactions";
 
-export const getCategories = async (API_URL: string, token: string) => {
-  const res = await fetch(`${API_URL}/api/category/getCategories`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (!res.ok) throw new Error("Failed to fetch categories");
-
-  return res.json() as Promise<Category[]>;
+export type TransactionFilters = {
+  page?: number;
+  limit?: number;
+  type?: "income" | "expense";
+  categoryId?: string;
+  accountId?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
-export const getTransactions = async (API_URL: string, token: string) => {
-  const res = await fetch(`${API_URL}/api/transactions/getTransactions`, {
-    headers: { Authorization: `Bearer ${token}` },
+export type PaginatedTransactions = {
+  transactions: Transaction[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+};
+
+export const getRecentTransactions = async (
+  API_URL: string,
+  token: string,
+  count: number = 10
+) => {
+  return getTransactions(API_URL, token, {
+    page: 1,
+    limit: count,
   });
+};
 
-  if (!res.ok) throw new Error("Failed to fetch transactions");
+export const getTransactions = async (
+  API_URL: string,
+  token: string,
+  filters: TransactionFilters = {}
+) => {
+  const params: Record<string, string> = {};
 
-  return res.json() as Promise<Transaction[]>;
+  if (filters.page) params.page = String(filters.page);
+  if (filters.limit) params.limit = String(filters.limit);
+  if (filters.type) params.type = filters.type;
+  if (filters.categoryId) params.categoryId = filters.categoryId;
+  if (filters.accountId) params.accountId = filters.accountId;
+  if (filters.search) params.search = filters.search;
+  if (filters.startDate) params.startDate = filters.startDate;
+  if (filters.endDate) params.endDate = filters.endDate;
+
+  try {
+    const res = await axios.get<PaginatedTransactions>(
+      `${API_URL}/api/transactions/transactions`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      }
+    );
+
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || "Failed to fetch transactions");
+  }
 };
 
 export const createTransaction = async (
@@ -25,18 +69,37 @@ export const createTransaction = async (
   token: string,
   body: any
 ) => {
-  const res = await fetch(`${API_URL}/api/transactions/createTransaction`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await axios.post(
+      `${API_URL}/api/transactions/createTransaction`,
+      body,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  const data = await res.json();
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || "Failed to create transaction");
+  }
+};
 
-  if (!res.ok) throw new Error(data.message);
-
-  return data;
+export const deleteTransaction = async (
+  API_URL: string,
+  token: string,
+  transactionId: string
+) => {
+  try {
+    await axios.delete(
+      `${API_URL}/api/transactions/${transactionId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || "Failed to delete transaction");
+  }
 };
