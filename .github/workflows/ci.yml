@@ -1,0 +1,73 @@
+name: MERN CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # =========================
+      # FRONTEND (Vercel)
+      # =========================
+      - name: Cache frontend dependencies
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: frontend-${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            frontend-${{ runner.os }}-node-
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      # =========================
+      # BACKEND (Render)
+      # =========================
+      - name: Cache backend dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: backend-${{ runner.os }}-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            backend-${{ runner.os }}-node-
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build || echo "No build step"
+
+      - name: Backend TypeScript syntax check
+        working-directory: ./backend
+        run: npx tsc --noEmit
+
+      # =========================
+      # Render deploy
+      # =========================
+      - name: Trigger Render backend deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Triggering Render deploy..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
