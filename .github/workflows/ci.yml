@@ -11,20 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repository
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
 
       # =========================
       # FRONTEND (Vercel)
       # =========================
+      - name: Cache frontend dependencies
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: frontend-${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            frontend-${{ runner.os }}-node-
+
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm install
@@ -36,6 +43,14 @@ jobs:
       # =========================
       # BACKEND (Render)
       # =========================
+      - name: Cache backend dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: backend-${{ runner.os }}-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            backend-${{ runner.os }}-node-
+
       - name: Install backend dependencies
         working-directory: ./backend
         run: npm install
@@ -44,6 +59,9 @@ jobs:
         working-directory: ./backend
         run: npm run build || echo "No build step"
 
+      # =========================
+      # Backend syntax check (safe)
+      # =========================
       - name: Backend syntax check
         working-directory: ./backend
         run: node --check server.js
