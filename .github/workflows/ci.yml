@@ -62,3 +62,12 @@ jobs:
       - name: Backend TypeScript syntax check
         working-directory: ./backend
         run: npx tsc --noEmit
+
+      # =========================
+      # Render deploy
+      # =========================
+      - name: Trigger Render backend deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "Triggering Render deploy..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
